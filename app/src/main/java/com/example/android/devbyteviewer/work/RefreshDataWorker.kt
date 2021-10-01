@@ -11,7 +11,6 @@ import timber.log.Timber
 class RefreshDataWorker(appContext: Context, params: WorkerParameters):
     CoroutineWorker(appContext, params){
 
-
     override suspend fun doWork(): Result {
         val database = getDatabase(applicationContext)
         val repository = VideosRepository(database)
@@ -24,6 +23,10 @@ class RefreshDataWorker(appContext: Context, params: WorkerParameters):
         }
 
         return Result.success()
+    }
+
+    companion object{
+        const val WORK_NAME = "com.example.android.devbyteviewer.work.RefreshDataWorker"
     }
 
 
