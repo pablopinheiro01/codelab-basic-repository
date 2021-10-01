@@ -17,9 +17,8 @@
 package com.example.android.devbyteviewer
 
 import android.app.Application
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import android.os.Build
+import androidx.work.*
 import com.example.android.devbyteviewer.work.RefreshDataWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,8 +46,23 @@ class DevByteApplication : Application() {
 
     //cria um worker recorrente para fazer um fetch dos dados capturados da api
     private fun setupRecurringWork(){
+
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .setRequiresBatteryNotLow(true)
+            .setRequiresCharging(true)
+            .apply {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+                    setRequiresDeviceIdle(true)
+                }
+            }
+            .build()
+
         //programado a repetição da atividade para 1x por dia.
-        val repeatingRequest = PeriodicWorkRequestBuilder<RefreshDataWorker>(1, TimeUnit.DAYS).build()
+        val repeatingRequest = PeriodicWorkRequestBuilder<RefreshDataWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(constraints)
+            .build()
+
 
         WorkManager.getInstance().enqueueUniquePeriodicWork(
             RefreshDataWorker.WORK_NAME,
