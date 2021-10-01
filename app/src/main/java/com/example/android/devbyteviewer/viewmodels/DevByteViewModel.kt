@@ -17,25 +17,22 @@
 package com.example.android.devbyteviewer.viewmodels
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.android.devbyteviewer.database.getDatabase
 import com.example.android.devbyteviewer.domain.DevByteVideo
 import com.example.android.devbyteviewer.network.DevByteNetwork
 import com.example.android.devbyteviewer.network.asDomainModel
+import com.example.android.devbyteviewer.repository.VideosRepository
 import kotlinx.coroutines.*
 import java.io.IOException
 
 class DevByteViewModel(application: Application) : AndroidViewModel(application) {
-
-
-    private val _playlist = MutableLiveData<List<DevByteVideo>>()
-    val playlist: LiveData<List<DevByteVideo>>
-        get() = _playlist
-
 
     private var _eventNetworkError = MutableLiveData<Boolean>(false)
     val eventNetworkError: LiveData<Boolean>
@@ -45,23 +42,26 @@ class DevByteViewModel(application: Application) : AndroidViewModel(application)
     val isNetworkErrorShown: LiveData<Boolean>
         get() = _isNetworkErrorShown
 
+    private val videosRepository = VideosRepository(getDatabase(application))
+
+    val playlist = videosRepository.videos
+
     init {
-        refreshDataFromNetwork()
+//        refreshDataFromNetwork()
+        refreshDataFromRepository()
     }
 
-    private fun refreshDataFromNetwork() = viewModelScope.launch {
-
-        try {
-             val playlist = DevByteNetwork.devbytes.getPlaylist()
-            _playlist.postValue(playlist.asDomainModel())
-
-            _eventNetworkError.value = false
-            _isNetworkErrorShown.value = false
-
-        } catch (networkError: IOException) {
-            delay(2000)
-            // Show a Toast error message and hide the progress bar.
-            _eventNetworkError.value = true
+    private fun refreshDataFromRepository() {
+        viewModelScope.launch {
+            try {
+                videosRepository.refresVideos()
+                _eventNetworkError.value = false
+                _isNetworkErrorShown.value = false
+            }catch(netWorkError: IOException){
+                if(playlist.value.isNullOrEmpty()){
+                    _eventNetworkError.value = true
+                }
+            }
         }
     }
 
