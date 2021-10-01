@@ -108,4 +108,8 @@ dependencies {
     kapt "androidx.room:room-compiler:$roomVersion"
     androidTestImplementation "androidx.room:room-testing:$roomVersion"
 
+    // WorkManager dependency
+    def work_version = "2.4.0"
+    implementation "android.arch.work:work-runtime-ktx:$work_version"
+
 }
