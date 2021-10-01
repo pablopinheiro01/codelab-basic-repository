@@ -16,8 +16,36 @@
 
 package com.example.android.devbyteviewer.database
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.example.android.devbyteviewer.domain.DevByteVideo
+import com.example.android.devbyteviewer.util.setImageUrl
+
 
 /**
  * Database entities go in this file. These are responsible for reading and writing from the
  * database.
  */
+
+@Entity
+data class DatabaseVideo constructor(
+    @PrimaryKey
+    val url: String,
+    val updated: String,
+    val title: String,
+    val descripton: String,
+    val thumbnail: String
+)
+
+fun List<DatabaseVideo>.asDomain(): List<DevByteVideo>{
+
+    return map{
+        DevByteVideo(
+            url = it.url,
+            description = it.descripton,
+            thumbnail = it.thumbnail,
+            title = it.title,
+            updated = it.updated
+        )
+    }
+}
